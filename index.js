@@ -6,7 +6,7 @@ Queue = require('seuss-queue');
 async = require('odo-async');
 
 module.exports = function(options) {
-  var _currentbackoff, _drain, _inprogress, _retry, backoff, inflight, onitem, retrying, retrytimeout;
+  var _currentbackoff, _drain, _inprogress, _ondrain, _retry, _retrytimeout, backoff, inflight, onitem, retrying;
   onitem = options.onitem;
   inflight = options.inflight;
   if (inflight == null) {
@@ -20,9 +20,10 @@ module.exports = function(options) {
   if (backoff == null) {
     backoff = 500;
   }
-  retrytimeout = null;
+  _retrytimeout = null;
   _inprogress = false;
   _currentbackoff = backoff;
+  _ondrain = [];
   _retry = function() {
     var all, i, item, len;
     _currentbackoff *= 2;
@@ -32,23 +33,31 @@ module.exports = function(options) {
       inflight.enqueue(item);
     }
     retrying = Queue();
+    _retrytimeout = null;
     if (!_inprogress) {
       return _drain();
     }
   };
   _drain = function() {
-    var item;
+    var cb, i, item, len, ondrain;
     _inprogress = true;
     if (inflight.length() === 0) {
       if (retrying.length() === 0) {
         _currentbackoff = backoff;
-      }
-      if (retrytimeout === null) {
+        ondrain = _ondrain;
+        _ondrain = [];
+        for (i = 0, len = ondrain.length; i < len; i++) {
+          cb = ondrain[i];
+          cb();
+        }
+      } else if (_retrytimeout === null) {
         console.log("Retrying " + (retrying.length()) + " messages in " + _currentbackoff + "ms");
-        retrytimeout = setTimeout(_retry, _currentbackoff);
+        _retrytimeout = setTimeout(_retry, _currentbackoff);
       }
-      _inprogress = false;
-      return;
+      if (inflight.length() === 0) {
+        _inprogress = false;
+        return;
+      }
     }
     item = inflight.peek();
     return onitem(item, function(success) {
@@ -80,7 +89,13 @@ module.exports = function(options) {
     },
     compact: function() {
       inflight.compact();
-      return retrying.compact();
+      return retrying.compact;
+    },
+    drain: function(cb) {
+      if (!_inprogress && _retrytimeout === null) {
+        return cb();
+      }
+      return _ondrain.push(cb);
     }
   };
 };

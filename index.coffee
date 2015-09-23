@@ -10,15 +10,17 @@ module.exports = (options) ->
   backoff = options.delay
   backoff ?= 500
 
-  retrytimeout = null
+  _retrytimeout = null
   _inprogress = no
   _currentbackoff = backoff
+  _ondrain = []
 
   _retry = ->
     _currentbackoff *= 2
     all = retrying.all()
     inflight.enqueue item for item in all
     retrying = Queue()
+    _retrytimeout = null
     _drain() if !_inprogress
 
   _drain = ->
@@ -26,11 +28,15 @@ module.exports = (options) ->
     if inflight.length() is 0
       if retrying.length() is 0
         _currentbackoff = backoff
-      if retrytimeout is null
+        ondrain = _ondrain
+        _ondrain = []
+        cb() for cb in ondrain
+      else if _retrytimeout is null
         console.log "Retrying #{retrying.length()} messages in #{_currentbackoff}ms"
-        retrytimeout = setTimeout _retry, _currentbackoff
-      _inprogress = no
-      return
+        _retrytimeout = setTimeout _retry, _currentbackoff
+      if inflight.length() is 0
+        _inprogress = no
+        return
 
     item = inflight.peek()
     onitem item, (success) ->
@@ -52,4 +58,7 @@ module.exports = (options) ->
     inflight.length() + retrying.length()
   compact: ->
     inflight.compact()
-    retrying.compact()
+    retrying.compact
+  drain: (cb) ->
+    return cb() if !_inprogress and _retrytimeout is null
+    _ondrain.push cb
