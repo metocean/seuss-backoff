@@ -33,7 +33,7 @@ module.exports = (options) ->
       return
 
     item = inflight.peek()
-    item (success) ->
+    onitem item, (success) ->
       if !success
         retrying.enqueue item
       inflight.dequeue()

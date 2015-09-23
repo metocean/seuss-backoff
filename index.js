@@ -51,7 +51,7 @@ module.exports = function(options) {
       return;
     }
     item = inflight.peek();
-    return item(function(success) {
+    return onitem(item, function(success) {
       if (!success) {
         retrying.enqueue(item);
       }
