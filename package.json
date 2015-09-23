@@ -1,6 +1,6 @@
 {
   "name": "seuss-backoff",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Exponential backoff queue",
   "main": "index.js",
   "scripts": {
