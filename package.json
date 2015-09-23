@@ -20,5 +20,7 @@
   },
   "homepage": "https://github.com/odojs/seuss-backoff#readme",
   "dependencies": {
+    "odo-async": "1.0.1",
+    "seuss-queue": "0.1.0"
   }
 }
