@@ -96,6 +96,12 @@ module.exports = function(options) {
         return cb();
       }
       return _ondrain.push(cb);
+    },
+    destroy: function() {
+      if (_retrytimeout) {
+        clearTimeout(_retrytimeout);
+        return _retrytimeout = null;
+      }
     }
   };
 };

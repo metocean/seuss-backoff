@@ -62,3 +62,7 @@ module.exports = (options) ->
   drain: (cb) ->
     return cb() if !_inprogress and _retrytimeout is null
     _ondrain.push cb
+  destroy: ->
+    if _retrytimeout
+      clearTimeout _retrytimeout
+      _retrytimeout = null
