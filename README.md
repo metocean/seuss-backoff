@@ -1,2 +1,3 @@
-# seuss-backoff
-Backoff queue
+# Seuss Backoff
+
+Exponential backoff queue
