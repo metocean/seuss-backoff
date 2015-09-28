@@ -40,7 +40,7 @@ module.exports = (options) ->
         cb() for cb in ondrain
       else if _retrytimeout is null
         if _currentbackoff >= notify
-          console.log "Retrying #{retrying.length()} messages in #{_currentbackoff / 1000}s"
+          console.error "Retrying #{retrying.length()} messages in #{_currentbackoff / 1000}s"
         _retrytimeout = setTimeout _retry, _currentbackoff
       if inflight.length() is 0
         _inprogress = no

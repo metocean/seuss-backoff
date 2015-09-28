@@ -65,7 +65,7 @@ module.exports = function(options) {
         }
       } else if (_retrytimeout === null) {
         if (_currentbackoff >= notify) {
-          console.log("Retrying " + (retrying.length()) + " messages in " + (_currentbackoff / 1000) + "s");
+          console.error("Retrying " + (retrying.length()) + " messages in " + (_currentbackoff / 1000) + "s");
         }
         _retrytimeout = setTimeout(_retry, _currentbackoff);
       }
