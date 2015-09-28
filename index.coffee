@@ -9,6 +9,8 @@ module.exports = (options) ->
   retrying ?= Queue()
   backoff = options.delay
   backoff ?= 500
+  factor = options.factor
+  factor ?= 1.5
   limit = options.limit
   limit ?= 1000 * 60
   notify = options.notify
@@ -20,7 +22,7 @@ module.exports = (options) ->
   _ondrain = []
 
   _retry = ->
-    _currentbackoff *= 2
+    _currentbackoff *= factor
     _currentbackoff = Math.max _currentbackoff, limit
     all = retrying.all()
     inflight.enqueue item for item in all
@@ -50,6 +52,8 @@ module.exports = (options) ->
         retrying.enqueue item
       inflight.dequeue()
       async.delay _drain
+
+  _drain() if !_inprogress
 
   enqueue: (item, cb) ->
     inflight.enqueue item

@@ -6,7 +6,7 @@ Queue = require('seuss-queue');
 async = require('odo-async');
 
 module.exports = function(options) {
-  var _currentbackoff, _drain, _inprogress, _ondrain, _retry, _retrytimeout, backoff, inflight, limit, notify, onitem, retrying;
+  var _currentbackoff, _drain, _inprogress, _ondrain, _retry, _retrytimeout, backoff, factor, inflight, limit, notify, onitem, retrying;
   onitem = options.onitem;
   inflight = options.inflight;
   if (inflight == null) {
@@ -19,6 +19,10 @@ module.exports = function(options) {
   backoff = options.delay;
   if (backoff == null) {
     backoff = 500;
+  }
+  factor = options.factor;
+  if (factor == null) {
+    factor = 1.5;
   }
   limit = options.limit;
   if (limit == null) {
@@ -34,7 +38,7 @@ module.exports = function(options) {
   _ondrain = [];
   _retry = function() {
     var all, i, item, len;
-    _currentbackoff *= 2;
+    _currentbackoff *= factor;
     _currentbackoff = Math.max(_currentbackoff, limit);
     all = retrying.all();
     for (i = 0, len = all.length; i < len; i++) {
@@ -79,6 +83,9 @@ module.exports = function(options) {
       return async.delay(_drain);
     });
   };
+  if (!_inprogress) {
+    _drain();
+  }
   return {
     enqueue: function(item, cb) {
       inflight.enqueue(item);
