@@ -9,6 +9,10 @@ module.exports = (options) ->
   retrying ?= Queue()
   backoff = options.delay
   backoff ?= 500
+  limit = options.limit
+  limit ?= 1000 * 60
+  notify = options.notify
+  notify ?= 1000 * 30
 
   _retrytimeout = null
   _inprogress = no
@@ -17,6 +21,7 @@ module.exports = (options) ->
 
   _retry = ->
     _currentbackoff *= 2
+    _currentbackoff = Math.max _currentbackoff, limit
     all = retrying.all()
     inflight.enqueue item for item in all
     retrying = Queue()
@@ -32,7 +37,8 @@ module.exports = (options) ->
         _ondrain = []
         cb() for cb in ondrain
       else if _retrytimeout is null
-        console.log "Retrying #{retrying.length()} messages in #{_currentbackoff}ms"
+        if _currentbackoff >= notify
+          console.log "Retrying #{retrying.length()} messages in #{_currentbackoff / 1000}s"
         _retrytimeout = setTimeout _retry, _currentbackoff
       if inflight.length() is 0
         _inprogress = no

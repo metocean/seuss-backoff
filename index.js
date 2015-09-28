@@ -6,7 +6,7 @@ Queue = require('seuss-queue');
 async = require('odo-async');
 
 module.exports = function(options) {
-  var _currentbackoff, _drain, _inprogress, _ondrain, _retry, _retrytimeout, backoff, inflight, onitem, retrying;
+  var _currentbackoff, _drain, _inprogress, _ondrain, _retry, _retrytimeout, backoff, inflight, limit, notify, onitem, retrying;
   onitem = options.onitem;
   inflight = options.inflight;
   if (inflight == null) {
@@ -20,6 +20,14 @@ module.exports = function(options) {
   if (backoff == null) {
     backoff = 500;
   }
+  limit = options.limit;
+  if (limit == null) {
+    limit = 1000 * 60;
+  }
+  notify = options.notify;
+  if (notify == null) {
+    notify = 1000 * 30;
+  }
   _retrytimeout = null;
   _inprogress = false;
   _currentbackoff = backoff;
@@ -27,6 +35,7 @@ module.exports = function(options) {
   _retry = function() {
     var all, i, item, len;
     _currentbackoff *= 2;
+    _currentbackoff = Math.max(_currentbackoff, limit);
     all = retrying.all();
     for (i = 0, len = all.length; i < len; i++) {
       item = all[i];
@@ -51,7 +60,9 @@ module.exports = function(options) {
           cb();
         }
       } else if (_retrytimeout === null) {
-        console.log("Retrying " + (retrying.length()) + " messages in " + _currentbackoff + "ms");
+        if (_currentbackoff >= notify) {
+          console.log("Retrying " + (retrying.length()) + " messages in " + (_currentbackoff / 1000) + "s");
+        }
         _retrytimeout = setTimeout(_retry, _currentbackoff);
       }
       if (inflight.length() === 0) {
