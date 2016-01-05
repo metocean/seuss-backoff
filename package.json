@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/odojs/seuss-backoff.git"
+    "url": "git+https://github.com/metocean/seuss-backoff.git"
   },
   "keywords": [
     "queue"
@@ -16,9 +16,9 @@
   "author": "Thomas Coats <thomas.coats@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/odojs/seuss-backoff/issues"
+    "url": "https://github.com/metocean/seuss-backoff/issues"
   },
-  "homepage": "https://github.com/odojs/seuss-backoff#readme",
+  "homepage": "https://github.com/metocean/seuss-backoff#readme",
   "dependencies": {
     "odo-async": "1.0.1",
     "seuss-queue": "0.1.0"
